@@ -11,11 +11,11 @@ function PersonForm({persons, setPersons, setMessage, setType}) {
         const existingPerson = persons.find(person => person.name === newName)
 
         if(existingPerson){
-          if(existingPerson.number !== newPhone ){
+          if(existingPerson.phone !== newPhone ){
 
             const updatedPhone = {
               name: existingPerson.name,
-              number: newPhone
+              phone: newPhone
             }
             update(existingPerson.id, updatedPhone)
             .then(response => {
@@ -53,7 +53,7 @@ function PersonForm({persons, setPersons, setMessage, setType}) {
 
           const anotherUser = {
             name: newName,
-            number: newPhone
+            phone: newPhone
           }
           create(anotherUser)
           .then(response => {
@@ -67,7 +67,7 @@ function PersonForm({persons, setPersons, setMessage, setType}) {
               setType(null)
             }, 5000)
           })
-          .catch(error => console.log('Error getting users:', error))
+          .catch(error => console.log('Error getting users:', error.message))
         }
 
       }
