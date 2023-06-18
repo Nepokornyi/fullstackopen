@@ -75,7 +75,9 @@ app.post('/api/persons', (request, response, next) => {
 })
 
 app.put('/api/persons/:id', (request, response, next) => {
-    Phone.findOneAndUpdate({name: request.body.name}, {phone: request.body.phone}, {new: true})
+    const {name, phone} = request.body
+
+    Phone.findOneAndUpdate({name}, {phone}, {new: true, runValidators: true, context: 'query'})
     .then(updatedPhone => {
         response.json(updatedPhone);
     })
@@ -97,6 +99,9 @@ const errorHandler = (err, req, res, next) => {
 
     if(err.name === 'CastError'){
         return res.status(400).json({error: 'malformed ID'})       
+    }
+    else if (err.name === 'ValidationError'){
+        return res.status(400).json({error: err.message})
     }
 
     next(err)

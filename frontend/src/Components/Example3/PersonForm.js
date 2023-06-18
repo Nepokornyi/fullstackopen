@@ -41,7 +41,11 @@ function PersonForm({persons, setPersons, setMessage, setType}) {
                   setType(null)
                 }, 5000)
             })
-            .catch(error => console.log('Error updating number:', error))
+            .catch(error => {
+              console.log('Error updating number:', error)
+              setType('error')
+              setMessage(error.response.data.error)
+            })
 
           } else {
 
@@ -67,7 +71,11 @@ function PersonForm({persons, setPersons, setMessage, setType}) {
               setType(null)
             }, 5000)
           })
-          .catch(error => console.log('Error getting users:', error.message))
+          .catch(error => {
+            console.log('Error getting users:', error)
+            setType('error')
+            setMessage(error.response.data.error)
+          })
         }
 
       }
