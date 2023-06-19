@@ -13,7 +13,7 @@ app.use(cors());
 
 morgan.token('post-data', (request) => {
     return request.method === 'POST' ? JSON.stringify(request.body) : '';
-}) 
+});
 const formatLogging = ':method :url :status :response-time ms - :res[content-length] :post-data'
 app.use(morgan(formatLogging));
 
@@ -33,14 +33,14 @@ app.get('/info', (request, response, next) => {
         // send() instead of json() to display html
         response.send(htmlInfo)
     })
-    .catch(err => next(err))
+        .catch(err => next(err))
 })
 
 app.get('/api/persons', (request, response, next) => {
     Phone.find({}).then(phones => {
         response.json(phones);
     })
-    .catch(err => next(err))
+        .catch(err => next(err))
 })
 
 app.get('/api/persons/:id', (request, response, next) => {
@@ -49,17 +49,17 @@ app.get('/api/persons/:id', (request, response, next) => {
             response.json(phone);
         }
         else{
-            response.status(404).send({error: 'not found'})
+            response.status(404).send({ error: 'not found' })
         }
     })
-    .catch(err => next(err))
+        .catch(err => next(err))
 })
 
 app.post('/api/persons', (request, response, next) => {
     const body = request.body;
 
     if(body.name === undefined || body.phone === undefined){
-        return response.status(400).json({error: 'content missing'})
+        return response.status(400).json({ error: 'content missing' })
     }
 
     const phone = new Phone({
@@ -70,18 +70,18 @@ app.post('/api/persons', (request, response, next) => {
     phone.save().then(savedPhone => {
         response.json(savedPhone);
     })
-    .catch(err => next(err))
+        .catch(err => next(err))
 
 })
 
 app.put('/api/persons/:id', (request, response, next) => {
-    const {name, phone} = request.body
+    const { name, phone } = request.body
 
-    Phone.findOneAndUpdate({name}, {phone}, {new: true, runValidators: true, context: 'query'})
-    .then(updatedPhone => {
-        response.json(updatedPhone);
-    })
-    .catch(err => next(err))
+    Phone.findOneAndUpdate({ name }, { phone }, { new: true, runValidators: true, context: 'query' })
+        .then(updatedPhone => {
+            response.json(updatedPhone);
+        })
+        .catch(err => next(err))
 })
 
 app.delete('/api/persons/:id', (request, response, next) => {
@@ -89,7 +89,7 @@ app.delete('/api/persons/:id', (request, response, next) => {
         console.log('deleted ', phone)
         response.status(204).end();
     })
-    .catch(err => next(err));
+        .catch(err => next(err));
 })
 
 // -----------------
@@ -98,10 +98,10 @@ const errorHandler = (err, req, res, next) => {
     console.log(err.name);
 
     if(err.name === 'CastError'){
-        return res.status(400).json({error: 'malformed ID'})       
+        return res.status(400).json({ error: 'malformed ID' })
     }
     else if (err.name === 'ValidationError'){
-        return res.status(400).json({error: err.message})
+        return res.status(400).json({ error: err.message })
     }
 
     next(err)
