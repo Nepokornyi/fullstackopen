@@ -1,19 +1,4 @@
-require('dotenv').config({ path: '../.env' })
-
-const mongoose = require('mongoose');
-mongoose.set('strictQuery', false);
-
-const url = process.env.MONGO_DB;
-
-console.log('connecting to ', url);
-
-mongoose.connect(url)
-    .then(() => {
-        console.log('connected to MongoDB');
-    })
-    .catch(err => {
-        console.log('error connecting to MongoDB', err.message);
-    })
+const mongoose = require ('mongoose')
 
 const phoneSchema = new mongoose.Schema({
     name: {
