@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "cross-env NODE_ENV=test jest --verbose --runInBand",
-    "dev": "cross-env NODE_ENV=development nodemon ./ExampleOne/index.js",
+    "dev": "cross-env NODE_ENV=development nodemon ./ExampleTwo/index.js",
     "lint": "eslint ."
   },
   "keywords": [],
@@ -26,6 +26,7 @@
     "supertest": "^6.3.3"
   },
   "jest": {
-    "testEnvironment": "node"
+    "testEnvironment": "node",
+    "globalTeardown": "./ExampleTwo/tests/teardown.js"
   }
 }
