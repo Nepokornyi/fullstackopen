@@ -18,99 +18,122 @@ beforeEach(async () => {
 })
 
 //* ------
+describe('fetching data from db', () => {
+    test('all blogs are returned', async () => {
+        await api
+            .get('/api/blogs')
+            .expect(200)
+            .expect('Content-Type', /application\/json/);
+    }, 10000)
 
-test('all blogs are returned', async () => {
-    await api
-        .get('/api/blogs')
-        .expect(200)
-        .expect('Content-Type', /application\/json/);
-}, 10000)
+    test('data contains specific string', async () => {
+        const response = await api.get('/api/blogs');
 
-test('data contains specific string', async () => {
-    const response = await api.get('/api/blogs');
+        const contents = response.body.map(r => r.title);
+        expect(contents).toContain('Vadimback');
+    })
 
-    const contents = response.body.map(r => r.title);
-    expect(contents).toContain('Vadimback');
+    test('blog has id property', async () => {
+        const response = await helper.blogsInDb()
+        const blogToCheck = response[0];
+        expect(blogToCheck.id).toBeDefined();
+    })
+
+    test('every blog has likes', async () => {
+        const response = await helper.blogsInDb();
+        const contents = response.map(blog => blog.likes);
+        console.log(contents);
+        contents.forEach( likes =>
+            expect(likes).toBeDefined()
+        )
+    })
 })
 
-test('blog has id property', async () => {
-    const response = await helper.blogsInDb()
-    const blogToCheck = response[0];
-    expect(blogToCheck.id).toBeDefined();
+describe('viewing a specific blog', () => {
+    test('a specific blog can be viewed', async () => {
+        const blogsAtStart = await helper.blogsInDb();
+        const blogToView = blogsAtStart[0];
+
+        const resultBlog = await api
+            .get(`/api/blogs/${blogToView.id}`)
+            .expect(200)
+            .expect('Content-Type', /application\/json/);
+
+        expect(resultBlog.body.title).toEqual(blogToView.title);
+    })
 })
 
-test('a valid blog can be added', async () => {
-    const newBlog = {
-        title: 'author',
-        author: 'MeMyselfI',
-        url: 'test.com',
-        likes: 100
-    }
+describe('adding, removing and modifying blogs', () => {
+    test('a valid blog can be added', async () => {
+        const newBlog = {
+            title: 'author',
+            author: 'MeMyselfI',
+            url: 'test.com',
+            likes: 100
+        }
 
-    await api
-        .post('/api/blogs')
-        .send(newBlog)
-        .expect(201)
-        .expect('Content-Type', /application\/json/);
+        await api
+            .post('/api/blogs')
+            .send(newBlog)
+            .expect(201)
+            .expect('Content-Type', /application\/json/);
 
-    const response = await helper.blogsInDb();
-    expect(response).toHaveLength(helper.initialBlog.length + 1);
-    const contents = response.map(r => r.author);
-    expect(contents).toContain(
-        'MeMyselfI'
-    );
-})
+        const response = await helper.blogsInDb();
+        expect(response).toHaveLength(helper.initialBlog.length + 1);
+        const contents = response.map(r => r.author);
+        expect(contents).toContain(
+            'MeMyselfI'
+        );
+    })
 
-test('a specific blog can be viewed', async () => {
-    const blogsAtStart = await helper.blogsInDb();
-    const blogToView = blogsAtStart[0];
+    test('a blog can be deleted', async() => {
+        const blogsAtStart = await helper.blogsInDb();
+        const blogToDelete = blogsAtStart[0];
 
-    const resultBlog = await api
-        .get(`/api/blogs/${blogToView.id}`)
-        .expect(200)
-        .expect('Content-Type', /application\/json/);
+        await api
+            .delete(`/api/blogs/${blogToDelete.id}`)
+            .expect(204)
 
-    expect(resultBlog.body.title).toEqual(blogToView.title);
-})
+        const blogsAtEnd = await helper.blogsInDb();
+        expect(blogsAtEnd).toHaveLength(
+            helper.initialBlog.length - 1
+        )
 
-test('a blog can be deleted', async() => {
-    const blogsAtStart = await helper.blogsInDb();
-    const blogToDelete = blogsAtStart[0];
+        const content = blogsAtEnd.map(r => r.title)
+        expect(content).not.toContain(blogToDelete.title)
+    }, 10000)
 
-    await api
-        .delete(`/api/blogs/${blogToDelete.id}`)
-        .expect(204)
+    test('blog without author & title is not added', async () => {
+        const newBlog = {
+            url: 'works.com',
+        }
 
-    const blogsAtEnd = await helper.blogsInDb();
-    expect(blogsAtEnd).toHaveLength(
-        helper.initialBlog.length - 1
-    )
+        await api
+            .post('/api/blogs')
+            .send(newBlog)
+            .expect(400)
 
-    const content = blogsAtEnd.map(r => r.title)
-    expect(content).not.toContain(blogToDelete.title)
-}, 10000)
+        const response = await helper.blogsInDb()
+        expect(response).toHaveLength(helper.initialBlog.length)
+    })
 
-test('every blog has likes', async () => {
-    const response = await helper.blogsInDb();
-    const contents = response.map(blog => blog.likes);
-    console.log(contents);
-    contents.forEach( likes =>
-        expect(likes).toBeDefined()
-    )
-})
+    test('update likes for specific blog', async () => {
+        const blogs = await helper.blogsInDb();
+        const specificBlog = blogs[0];
+        const updatedBlog = {
+            likes: 100
+        }
 
-test('blog without author & title is not added', async () => {
-    const newBlog = {
-        url: 'works.com',
-    }
+        await api
+            .put(`/api/blogs/${specificBlog.id}`)
+            .send(updatedBlog)
+            .expect(200)
+            .expect('Content-Type', /application\/json/);
 
-    await api
-        .post('/api/blogs')
-        .send(newBlog)
-        .expect(400)
-
-    const response = await helper.blogsInDb()
-    expect(response).toHaveLength(helper.initialBlog.length)
+        const updatedBlogs = await helper.blogsInDb();
+        const contents = updatedBlogs.map(content => content.likes);
+        expect(contents).toContain(100)
+    }, 10000)
 })
 
 afterAll(async () => {
